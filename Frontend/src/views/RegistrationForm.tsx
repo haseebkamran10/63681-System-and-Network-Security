@@ -30,7 +30,7 @@ const RegistrationForm: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-black/90">
+    <div className="min-h-screen flex items-center justify-center">
       {/* Background Blur Overlay */}
       <div className="absolute inset-0 bg-black/50 backdrop-blur-sm z-0"></div>
 
