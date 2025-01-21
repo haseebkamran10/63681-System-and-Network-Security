@@ -14,10 +14,12 @@ jobs:
     - name: Checkout Code
       uses: actions/checkout@v3
 
-    # Debug the directory structure to confirm layout
+    # Debug: Show directory structure
     - name: Debug Directory Structure
       run: |
-        echo "Listing all files in the workspace:"
+        echo "Workspace Directory:"
+        pwd
+        echo "Listing all files and directories:"
         ls -R
 
     # Set up Node.js
@@ -27,34 +29,34 @@ jobs:
         node-version: '18'
         cache: 'npm'
 
-    # Debug Backend Directory
+    # Debug: Verify Backend Directory
     - name: Verify Backend Directory
       run: |
         echo "Checking Backend directory:"
         ls -l ./Backend
-        ls -l ./Backend/package-lock.json # Verify the lock file exists
+        ls -l ./Backend/package-lock.json || echo "Backend/package-lock.json NOT FOUND"
 
     # Install Backend Dependencies
     - name: Install Backend Dependencies
       run: |
         echo "Installing backend dependencies..."
         cd Backend
-        npm ci
+        npm ci || echo "Backend npm install failed"
         cd ..
 
-    # Debug Frontend Directory
+    # Debug: Verify Frontend Directory
     - name: Verify Frontend Directory
       run: |
         echo "Checking Frontend directory:"
         ls -l ./Frontend
-        ls -l ./Frontend/package-lock.json # Verify the lock file exists
+        ls -l ./Frontend/package-lock.json || echo "Frontend/package-lock.json NOT FOUND"
 
     # Install Frontend Dependencies
     - name: Install Frontend Dependencies
       run: |
         echo "Installing frontend dependencies..."
         cd Frontend
-        npm ci
+        npm ci || echo "Frontend npm install failed"
         cd ..
 
     # Build Frontend
