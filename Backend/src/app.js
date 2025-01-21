@@ -18,8 +18,5 @@ app.use('/registrations', registrationRoutes);
 const PORT = process.env.PORT || 45000;  // Using a unique port 45000
 
 // Start the server
-app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
-});
 
 module.exports = app;  // Export the configured app
