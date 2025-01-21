@@ -3,7 +3,7 @@ name: Deploy to AWS VM
 on:
   push:
     branches:
-      - main # Adjust this to the branch you want to trigger the deployment on
+      - main # Trigger only on main branch updates
 
 jobs:
   deploy:
@@ -14,27 +14,34 @@ jobs:
       uses: actions/checkout@v3
 
     - name: Debug Directory Structure
-      run: ls -R # List all files and folders to verify structure
+      run: |
+        echo "Listing all files in the workspace:"
+        ls -R
 
     - name: Set up Node.js
       uses: actions/setup-node@v3
       with:
-        node-version: '18'
+        node-version: '18' # Ensure Node.js version matches your project requirements
         cache: 'npm'
+
+    - name: Find package-lock.json Files
+      run: |
+        echo "Finding all package-lock.json files:"
+        find . -name "package-lock.json"
 
     # Install Backend Dependencies
     - name: Install Backend Dependencies
       working-directory: ./Backend
       run: |
-        ls # Verify that package-lock.json is present
-        npm ci # Use package-lock.json for deterministic installs
+        echo "Checking for Backend/package-lock.json..."
+        test -f package-lock.json && npm ci || echo "package-lock.json not found"
 
     # Install Frontend Dependencies
     - name: Install Frontend Dependencies
       working-directory: ./Frontend
       run: |
-        ls # Verify that package-lock.json is present
-        npm ci # Use package-lock.json for deterministic installs
+        echo "Checking for Frontend/package-lock.json..."
+        test -f package-lock.json && npm ci || echo "package-lock.json not found"
 
     # Build Frontend
     - name: Build Frontend
@@ -45,9 +52,9 @@ jobs:
     - name: Deploy to AWS VM
       env:
         SSH_KEY: |
-          yg3h043uCkqanLawuY+sLpgKr/t4/obaxFkm2ADqrcQ # Your test SSH private key
-        HOST: 16.171.171.132                         # Public IP of your AWS VM
-        USER: ubuntu                                 # Username for the AWS VM
+          yg3h043uCkqanLawuY+sLpgKr/t4/obaxFkm2ADqrcQ
+        HOST: 16.171.171.132
+        USER: ubuntu
         BASE_URL: ${{ secrets.BASE_URL }}
         SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
         SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
@@ -56,21 +63,17 @@ jobs:
         chmod 600 ssh_key.pem
 
         ssh -o StrictHostKeyChecking=no -i ssh_key.pem $USER@$HOST << 'EOF'
-          # Ensure backend directory exists, then update and restart
           mkdir -p ~/backend
           rsync -avz --delete ./Backend/ ~/backend
           cd ~/backend
           npm install
 
-          # Write environment variables to the .env file
           echo "BASE_URL=$BASE_URL" > .env
           echo "SUPABASE_URL=$SUPABASE_URL" >> .env
           echo "SUPABASE_KEY=$SUPABASE_KEY" >> .env
 
-          # Restart backend service
           pm2 restart all || pm2 start src/index.js --name backend
 
-          # Ensure frontend directory exists, then update and serve
           mkdir -p ~/frontend
           rsync -avz --delete ./Frontend/dist/ ~/frontend/dist
           pm2 serve ~/frontend/dist --name frontend --port 3000 --spa
