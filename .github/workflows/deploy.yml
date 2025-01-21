@@ -21,11 +21,11 @@ jobs:
 
     - name: Install Backend Dependencies
       working-directory: ./Backend
-      run: npm install
+      run: npm ci # Uses package-lock.json for deterministic dependency installation
 
     - name: Install Frontend Dependencies
       working-directory: ./Frontend
-      run: npm install
+      run: npm ci # Uses package-lock.json for deterministic dependency installation
 
     - name: Build Frontend
       working-directory: ./Frontend
