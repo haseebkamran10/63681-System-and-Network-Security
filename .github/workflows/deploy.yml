@@ -37,6 +37,9 @@ jobs:
           yg3h043uCkqanLawuY+sLpgKr/t4/obaxFkm2ADqrcQ # Your test SSH private key
         HOST: 16.171.171.132                         # Public IP of your AWS VM
         USER: ubuntu                                 # Username for the AWS VM
+        BASE_URL: ${{ secrets.BASE_URL }}
+        SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+        SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
       run: |
         # Save the SSH key to a file
         echo "$SSH_KEY" > ssh_key.pem
@@ -49,6 +52,13 @@ jobs:
           rsync -avz --delete ./Backend/ ~/backend
           cd ~/backend
           npm install
+
+          # Write environment variables to the .env file
+          echo "BASE_URL=$BASE_URL" > .env
+          echo "SUPABASE_URL=$SUPABASE_URL" >> .env
+          echo "SUPABASE_KEY=$SUPABASE_KEY" >> .env
+
+          # Restart backend service
           pm2 restart all || pm2 start src/index.js --name backend
 
           # Ensure frontend directory exists, then update and serve
