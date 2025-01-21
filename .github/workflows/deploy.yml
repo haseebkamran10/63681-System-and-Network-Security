@@ -3,68 +3,54 @@ name: Deploy to AWS VM
 on:
   push:
     branches:
-      - main # Trigger only on the main branch
+      - main
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
 
     steps:
-    # Checkout the repository
+    # Step 1: Checkout the code
     - name: Checkout Code
       uses: actions/checkout@v3
 
-    # Debug: Show directory structure
+    # Step 2: Debug directory structure
     - name: Debug Directory Structure
       run: |
-        echo "Workspace Directory:"
+        echo "Current Directory:"
         pwd
         echo "Listing all files and directories:"
         ls -R
 
-    # Set up Node.js
+    # Step 3: Set up Node.js environment
     - name: Set up Node.js
       uses: actions/setup-node@v3
       with:
         node-version: '18'
         cache: 'npm'
 
-    # Debug: Verify Backend Directory
-    - name: Verify Backend Directory
-      run: |
-        echo "Checking Backend directory:"
-        ls -l ./Backend
-        ls -l ./Backend/package-lock.json || echo "Backend/package-lock.json NOT FOUND"
-
-    # Install Backend Dependencies
+    # Step 4: Install Backend Dependencies
     - name: Install Backend Dependencies
+      working-directory: ./Backend
       run: |
-        echo "Installing backend dependencies..."
-        cd Backend
-        npm ci || echo "Backend npm install failed"
-        cd ..
+        echo "Installing Backend dependencies..."
+        ls -l package-lock.json || echo "package-lock.json not found in Backend"
+        npm ci
 
-    # Debug: Verify Frontend Directory
-    - name: Verify Frontend Directory
-      run: |
-        echo "Checking Frontend directory:"
-        ls -l ./Frontend
-        ls -l ./Frontend/package-lock.json || echo "Frontend/package-lock.json NOT FOUND"
-
-    # Install Frontend Dependencies
+    # Step 5: Install Frontend Dependencies
     - name: Install Frontend Dependencies
+      working-directory: ./Frontend
       run: |
-        echo "Installing frontend dependencies..."
-        cd Frontend
-        npm ci || echo "Frontend npm install failed"
-        cd ..
+        echo "Installing Frontend dependencies..."
+        ls -l package-lock.json || echo "package-lock.json not found in Frontend"
+        npm ci
 
-    # Build Frontend
+    # Step 6: Build Frontend
     - name: Build Frontend
       working-directory: ./Frontend
       run: npm run build
 
-    # Deploy to AWS VM
+    # Step 7: Deploy to AWS VM
     - name: Deploy to AWS VM
       env:
         SSH_KEY: |
