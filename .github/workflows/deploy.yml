@@ -12,6 +12,8 @@ jobs:
     steps:
     - name: Checkout Code
       uses: actions/checkout@v3
+      with:
+        fetch-depth: 0
 
     - name: Set up Node.js
       uses: actions/setup-node@v3
@@ -19,28 +21,27 @@ jobs:
         node-version: '18'
         cache: 'npm'
 
-    - name: List all files
-      run: ls -R
-
     - name: Install Backend Dependencies
       run: |
         cd Backend
+        pwd
+        ls -al
         if [ -f package-lock.json ]; then
-          echo "package-lock.json found in Backend."
           npm ci
         else
-          echo "package-lock.json NOT FOUND in Backend."
+          echo "package-lock.json NOT FOUND."
           exit 1
         fi
 
     - name: Install Frontend Dependencies
       run: |
         cd Frontend
+        pwd
+        ls -al
         if [ -f package-lock.json ]; then
-          echo "package-lock.json found in Frontend."
           npm ci
         else
-          echo "package-lock.json NOT FOUND in Frontend."
+          echo "package-lock.json NOT FOUND."
           exit 1
         fi
 
@@ -49,22 +50,4 @@ jobs:
         cd Frontend
         npm run build
 
-    - name: Deploy to AWS VM
-      env:
-        SSH_KEY: ${{ secrets.SSH_KEY }}
-        HOST: ${{ secrets.HOST }}
-        USER: ${{ secrets.USER }}
-      run: |
-        echo "$SSH_KEY" > ssh_key.pem
-        chmod 600 ssh_key.pem
-        ssh -o StrictHostKeyChecking=no -i ssh_key.pem $USER@$HOST << 'EOF'
-          mkdir -p ~/backend ~/frontend
-          rsync -avz --delete ./Backend/ ~/backend/
-          rsync -avz --delete ./Frontend/dist/ ~/frontend/
-          cd ~/backend
-          npm install
-          pm2 restart all || pm2 start src/index.js --name backend
-          cd ~/frontend
-          pm2 serve dist --spa --port 3000 --name frontend
-        EOF
-        rm ssh_key.pem
+    # Additional deployment steps...
