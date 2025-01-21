@@ -51,10 +51,9 @@ jobs:
     # Deploy to AWS VM
     - name: Deploy to AWS VM
       env:
-        SSH_KEY: |
-          yg3h043uCkqanLawuY+sLpgKr/t4/obaxFkm2ADqrcQ
-        HOST: 16.171.171.132
-        USER: ubuntu
+        SSH_KEY: ${{ secrets.SSH_KEY }}
+        HOST: ${{ secrets.HOST }}
+        USER: ${{ secrets.USER }}
         BASE_URL: ${{ secrets.BASE_URL }}
         SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
         SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
