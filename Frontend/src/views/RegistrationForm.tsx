@@ -21,13 +21,15 @@ const RegistrationForm: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const response = await registerUser(formData);
+      // Directly await the function without assigning its result to a variable
+      await registerUser(formData);
       setSuccess("Registration successful!");
       setFormData({ name: "", email: "", phone: "", country: "" });
     } catch (error) {
       setSuccess("Registration failed. Please try again.");
     }
   };
+  
 
   return (
     <div className="min-h-screen flex items-center justify-center">
