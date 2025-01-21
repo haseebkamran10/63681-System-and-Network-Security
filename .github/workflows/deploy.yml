@@ -10,75 +10,44 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    # Step 1: Checkout the code
     - name: Checkout Code
       uses: actions/checkout@v3
+      with:
+        fetch-depth: 0
 
-    # Step 2: Debug directory structure
-    - name: Debug Directory Structure
-      run: |
-        echo "Current Directory:"
-        pwd
-        echo "Listing all files and directories:"
-        ls -R
-
-    # Step 3: Set up Node.js environment
     - name: Set up Node.js
       uses: actions/setup-node@v3
       with:
         node-version: '18'
         cache: 'npm'
 
-    # Step 4: Install Backend Dependencies
     - name: Install Backend Dependencies
-      working-directory: ./Backend
       run: |
-        echo "Installing Backend dependencies..."
-        ls -l package-lock.json || echo "package-lock.json not found in Backend"
-        npm ci
+        cd Backend
+        pwd
+        ls -al
+        if [ -f package-lock.json ]; then
+          npm ci
+        else
+          echo "package-lock.json NOT FOUND."
+          exit 1
+        fi
 
-    # Step 5: Install Frontend Dependencies
     - name: Install Frontend Dependencies
-      working-directory: ./Frontend
       run: |
-        echo "Installing Frontend dependencies..."
-        ls -l package-lock.json || echo "package-lock.json not found in Frontend"
-        npm ci
+        cd Frontend
+        pwd
+        ls -al
+        if [ -f package-lock.json ]; then
+          npm ci
+        else
+          echo "package-lock.json NOT FOUND."
+          exit 1
+        fi
 
-    # Step 6: Build Frontend
     - name: Build Frontend
-      working-directory: ./Frontend
-      run: npm run build
-
-    # Step 7: Deploy to AWS VM
-    - name: Deploy to AWS VM
-      env:
-        SSH_KEY: |
-          yg3h043uCkqanLawuY+sLpgKr/t4/obaxFkm2ADqrcQ # Your test SSH private key
-        HOST: 16.171.171.132
-        USER: ubuntu
-        BASE_URL: ${{ secrets.BASE_URL }}
-        SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
-        SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
       run: |
-        echo "$SSH_KEY" > ssh_key.pem
-        chmod 600 ssh_key.pem
+        cd Frontend
+        npm run build
 
-        ssh -o StrictHostKeyChecking=no -i ssh_key.pem $USER@$HOST << 'EOF'
-          mkdir -p ~/backend
-          rsync -avz --delete ./Backend/ ~/backend
-          cd ~/backend
-          npm install
-
-          echo "BASE_URL=$BASE_URL" > .env
-          echo "SUPABASE_URL=$SUPABASE_URL" >> .env
-          echo "SUPABASE_KEY=$SUPABASE_KEY" >> .env
-
-          pm2 restart all || pm2 start src/index.js --name backend
-
-          mkdir -p ~/frontend
-          rsync -avz --delete ./Frontend/dist/ ~/frontend/dist
-          pm2 serve ~/frontend/dist --name frontend --port 3000 --spa
-        EOF
-
-        rm ssh_key.pem
+    # Additional deployment steps...
