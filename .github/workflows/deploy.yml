@@ -1,28 +1,61 @@
-- name: Deploy to AWS
-  env:
-    SSH_KEY: |
-      yg3h043uCkqanLawuY+sLpgKr/t4/obaxFkm2ADqrcQ  # Your test SSH private key
-    HOST: 16.171.171.132  # Your AWS VM public IP
-    USER: ubuntu          # Your username for the AWS VM
-  run: |
-    # Save the SSH key to a file
-    echo "$SSH_KEY" > ssh_key.pem
-    chmod 600 ssh_key.pem
+name: Deploy to AWS VM
 
-    # SSH into the AWS VM and deploy the project
-    ssh -o StrictHostKeyChecking=no -i ssh_key.pem ubuntu@16.171.171.132 << 'EOF'
-      # Backend deployment
-      mkdir -p ~/backend
-      rsync -avz --delete ./Backend/ ~/backend
-      cd ~/backend
-      npm install
-      pm2 restart all || pm2 start src/index.js --name backend
+on:
+  push:
+    branches:
+      - main # Adjust this to the branch you want to trigger the deployment on
 
-      # Frontend deployment
-      mkdir -p ~/frontend
-      rsync -avz --delete ./Frontend/dist/ ~/frontend/dist
-      pm2 serve ~/frontend/dist --name frontend --port 3000 --spa
-    EOF
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
 
-    # Remove the temporary SSH key
-    rm ssh_key.pem
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v3
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18' # Ensure Node.js version matches your project requirements
+        cache: 'npm'
+
+    - name: Install Backend Dependencies
+      working-directory: ./Backend
+      run: npm install
+
+    - name: Install Frontend Dependencies
+      working-directory: ./Frontend
+      run: npm install
+
+    - name: Build Frontend
+      working-directory: ./Frontend
+      run: npm run build
+
+    - name: Deploy to AWS VM
+      env:
+        SSH_KEY: |
+          yg3h043uCkqanLawuY+sLpgKr/t4/obaxFkm2ADqrcQ # Your test SSH private key
+        HOST: 16.171.171.132                         # Public IP of your AWS VM
+        USER: ubuntu                                 # Username for the AWS VM
+      run: |
+        # Save the SSH key to a file
+        echo "$SSH_KEY" > ssh_key.pem
+        chmod 600 ssh_key.pem
+
+        # SSH into the AWS VM and deploy the project
+        ssh -o StrictHostKeyChecking=no -i ssh_key.pem $USER@$HOST << 'EOF'
+          # Ensure backend directory exists, then update and restart
+          mkdir -p ~/backend
+          rsync -avz --delete ./Backend/ ~/backend
+          cd ~/backend
+          npm install
+          pm2 restart all || pm2 start src/index.js --name backend
+
+          # Ensure frontend directory exists, then update and serve
+          mkdir -p ~/frontend
+          rsync -avz --delete ./Frontend/dist/ ~/frontend/dist
+          pm2 serve ~/frontend/dist --name frontend --port 3000 --spa
+        EOF
+
+        # Remove the temporary SSH key
+        rm ssh_key.pem
