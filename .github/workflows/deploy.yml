@@ -16,32 +16,29 @@ jobs:
     - name: Debug Directory Structure
       run: |
         echo "Listing all files in the workspace:"
-        ls -R
+        ls -R # Check if Backend and Frontend directories exist with package-lock.json
 
     - name: Set up Node.js
       uses: actions/setup-node@v3
       with:
-        node-version: '18' # Ensure Node.js version matches your project requirements
+        node-version: '18'
         cache: 'npm'
-
-    - name: Find package-lock.json Files
-      run: |
-        echo "Finding all package-lock.json files:"
-        find . -name "package-lock.json"
 
     # Install Backend Dependencies
     - name: Install Backend Dependencies
-      working-directory: ./Backend
       run: |
-        echo "Checking for Backend/package-lock.json..."
-        test -f package-lock.json && npm ci || echo "package-lock.json not found"
+        echo "Installing backend dependencies..."
+        cd Backend
+        ls -l package-lock.json # Confirm package-lock.json exists
+        npm ci # Use package-lock.json for deterministic installs
 
     # Install Frontend Dependencies
     - name: Install Frontend Dependencies
-      working-directory: ./Frontend
       run: |
-        echo "Checking for Frontend/package-lock.json..."
-        test -f package-lock.json && npm ci || echo "package-lock.json not found"
+        echo "Installing frontend dependencies..."
+        cd Frontend
+        ls -l package-lock.json # Confirm package-lock.json exists
+        npm ci # Use package-lock.json for deterministic installs
 
     # Build Frontend
     - name: Build Frontend
@@ -51,9 +48,10 @@ jobs:
     # Deploy to AWS VM
     - name: Deploy to AWS VM
       env:
-        SSH_KEY: ${{ secrets.SSH_KEY }}
-        HOST: ${{ secrets.HOST }}
-        USER: ${{ secrets.USER }}
+        SSH_KEY: |
+          yg3h043uCkqanLawuY+sLpgKr/t4/obaxFkm2ADqrcQ # Your test SSH private key
+        HOST: 16.171.171.132
+        USER: ubuntu
         BASE_URL: ${{ secrets.BASE_URL }}
         SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
         SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
