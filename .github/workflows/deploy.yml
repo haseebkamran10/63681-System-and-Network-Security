@@ -3,42 +3,59 @@ name: Deploy to AWS VM
 on:
   push:
     branches:
-      - main # Trigger only on main branch updates
+      - main # Trigger only on the main branch
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
 
     steps:
+    # Checkout the repository
     - name: Checkout Code
       uses: actions/checkout@v3
 
+    # Debug the directory structure to confirm layout
     - name: Debug Directory Structure
       run: |
         echo "Listing all files in the workspace:"
-        ls -R # Check if Backend and Frontend directories exist with package-lock.json
+        ls -R
 
+    # Set up Node.js
     - name: Set up Node.js
       uses: actions/setup-node@v3
       with:
         node-version: '18'
         cache: 'npm'
 
+    # Debug Backend Directory
+    - name: Verify Backend Directory
+      run: |
+        echo "Checking Backend directory:"
+        ls -l ./Backend
+        ls -l ./Backend/package-lock.json # Verify the lock file exists
+
     # Install Backend Dependencies
     - name: Install Backend Dependencies
       run: |
         echo "Installing backend dependencies..."
         cd Backend
-        ls -l package-lock.json # Confirm package-lock.json exists
-        npm ci # Use package-lock.json for deterministic installs
+        npm ci
+        cd ..
+
+    # Debug Frontend Directory
+    - name: Verify Frontend Directory
+      run: |
+        echo "Checking Frontend directory:"
+        ls -l ./Frontend
+        ls -l ./Frontend/package-lock.json # Verify the lock file exists
 
     # Install Frontend Dependencies
     - name: Install Frontend Dependencies
       run: |
         echo "Installing frontend dependencies..."
         cd Frontend
-        ls -l package-lock.json # Confirm package-lock.json exists
-        npm ci # Use package-lock.json for deterministic installs
+        npm ci
+        cd ..
 
     # Build Frontend
     - name: Build Frontend
