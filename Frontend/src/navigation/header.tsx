@@ -20,9 +20,6 @@ const Header: React.FC = () => {
               className="text-white text-sm font-medium hover:text-blue-400 transition-colors duration-300"
               style={{ fontFamily: 'Orbitron, sans-serif' }}
             >
-             
-              Dashboard
-
               Register Event
             </Link>
             <Link
@@ -30,6 +27,7 @@ const Header: React.FC = () => {
               className="text-white text-sm font-medium hover:text-blue-400 transition-colors duration-300"
               style={{ fontFamily: 'Orbitron, sans-serif' }}
             >
+              Dashboard
             </Link>
           </nav>
         </div>
