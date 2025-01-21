@@ -14,4 +14,12 @@ const supabase = require('./config/supabase');
 const registrationRoutes = require('./routes/registrationRoutes');
 app.use('/registrations', registrationRoutes);
 
+// Set the port directly, or use an environment variable if available
+const PORT = process.env.PORT || 45000;  // Using a unique port 45000
+
+// Start the server
+app.listen(PORT, () => {
+  console.log(`Server is running on port ${PORT}`);
+});
+
 module.exports = app;  // Export the configured app
