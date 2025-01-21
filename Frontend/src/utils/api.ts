@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const API = axios.create({
-    baseURL: 'http://localhost:3000', 
+    baseURL: 'http://16.171.171.132:3000', // Replace with your VM's public IP
 });
 
 // Example: Fetch all registrations
